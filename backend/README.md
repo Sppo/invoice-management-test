@@ -1,58 +1,117 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Invoice Management Backend
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Backend API.
 
-## About Laravel
+## Стек
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.3
+- Laravel 13
+- PostgreSQL 16
+- Docker Compose
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Структура
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Backend розділений на частини з окремими відповідальностями:
 
-## Learning Laravel
+- `app/Models/Invoice.php` - модель інвойсу та константи статусів.
+- `app/Http/Controllers/InvoiceController.php` -  для invoice endpoints.
+- `app/Http/Requests/StoreInvoiceRequest.php` - валідація створення інвойсу.
+- `app/Http/Requests/UpdateInvoiceRequest.php` - валідація оновлення інвойсу.
+- `app/Services/InvoiceService.php` -  створення, перегляд та оновлення інвойсів.
+- `database/migrations/*create_invoices_table.php` - структура таблиці інвойсів.
+- `routes/api.php` - API маршрути.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## API Endpoints
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```text
+GET    /api/invoices
+GET    /api/invoices/{id}
+POST   /api/invoices
+PUT    /api/invoices/{id}
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+## Правила
 
-## Contributing
+- `number` є унікальним.
+- `net_amount` має бути більше 0.
+- `vat_amount` має бути більше або дорівнювати 0.
+- `gross_amount` розраховується на backend як `net_amount + vat_amount`.
+- `due_date` не може бути раніше за `issue_date`.
+- Оновлювати можна тільки інвойси зі статусом `pending`.
+- При оновленні можна змінювати тільки `net_amount`, `vat_amount` і `due_date`.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Запуск
 
-## Code of Conduct
+Запустити Docker-оточення з кореня проєкту:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+docker compose up -d
+```
 
-## Security Vulnerabilities
+Запустити міграції всередині backend container:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+docker compose exec backend php artisan migrate
+```
 
-## License
+Backend API:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```text
+http://localhost:8000/api
+```
+
+Підключення до бази з локальних інструментів:
+
+```text
+Host: 127.0.0.1
+Port: 5433
+Database: invoices_db
+User: invoices_user
+Password: invoices_password
+```
+
+Всередині Docker Laravel підключається до PostgreSQL через:
+
+```text
+DB_HOST=db
+DB_PORT=5432
+```
+
+## Приклад створення інвойсу
+
+```json
+{
+  "number": "INV-001",
+  "supplier_name": "ТОВ Тест Постачальник",
+  "supplier_tax_id": "12345678",
+  "net_amount": 1000,
+  "vat_amount": 200,
+  "currency": "UAH",
+  "status": "pending",
+  "issue_date": "2026-06-16",
+  "due_date": "2026-06-30"
+}
+```
+
+## Компроміси
+
+- API відповіді повертаються напряму з Eloquent моделей і paginator. У production-версії я б додав API Resources для стабільного формату відповідей.
+- Статуси інвойсу зберігаються як рядки з константами в моделі.
+- Розмір пагінації зафіксований у сервісі, щоб не ускладнювати API.
+- Аутентифікація не реалізована, бо вона не потрібна за умовами завдання.
+
+## Що б я покращив у production-версії
+
+- Додав би API Resources для стабільного форматування відповідей.
+- Додав би фільтрацію та пошук у списку інвойсів.
+- Зробив би строгішу валідацію валюти.
+- Додав би авторизацію, якщо інвойси будуть привʼязані до користувачів.
+- Додав би логування для важливих бізнес-помилок, де це реально допомагає діагностиці.
+
+## UX edge cases
+
+- Backend повертає повідомлення валідації українською мовою.
+- Дублікати номерів інвойсів відхиляються.
+- Некоректні дати та відʼємні суми відхиляються.
+- Інвойси зі статусом `approved` або `rejected` не можна оновлювати.
+- `gross_amount` ніколи не береться з frontend і завжди перераховується на backend.
