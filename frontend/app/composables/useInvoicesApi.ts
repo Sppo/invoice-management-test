@@ -20,19 +20,23 @@ export const useInvoicesApi = () => {
   const get = (id: number) =>
     $fetch<Invoice>(`/invoices/${id}`, { baseURL });
 
-  const create = (payload: CreateInvoicePayload) =>
-    $fetch<Invoice>('/invoices', {
+  const create = async (payload: CreateInvoicePayload) => {
+    const res = await $fetch<{ message: string; data: Invoice }>('/invoices', {
       baseURL,
       method: 'POST',
       body: payload,
     });
+    return res.data;
+  };
 
-  const update = (id: number, payload: UpdateInvoicePayload) =>
-    $fetch<Invoice>(`/invoices/${id}`, {
+  const update = async (id: number, payload: UpdateInvoicePayload) => {
+    const res = await $fetch<{ message: string; data: Invoice }>(`/invoices/${id}`, {
       baseURL,
       method: 'PUT',
       body: payload,
     });
+    return res.data;
+  };
 
   return { list, get, create, update };
 };

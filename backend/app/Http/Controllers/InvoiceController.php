@@ -18,25 +18,35 @@ class InvoiceController extends Controller
     public function store(StoreInvoiceRequest $request)
     {
         $data_invoice = $request->validated();
-        return $this->invoiceService->createInvoice($data_invoice);
+        $invoice = $this->invoiceService->createInvoice($data_invoice);
+
+        return response()->json([
+            'message' => 'Інвойс успішно створено.',
+            'data' => $invoice,
+        ], 201);
     }
 
     // отримуємо список інвойсів
     public function index()
     {
-        return $this->invoiceService->getAllInvoices();
+        return response()->json($this->invoiceService->getAllInvoices());
     }
 
     // отримуємо конкретний інвойс
     public function show(int $id)
     {
-        return $this->invoiceService->getInvoiceById($id);
+        return response()->json($this->invoiceService->getInvoiceById($id));
     }
 
     // оновлюємо інвойс
     public function update(int $id, UpdateInvoiceRequest $updateInvoiceRequest)
     {
         $data_invoice = $updateInvoiceRequest->validated();
-        return $this->invoiceService->updateInvoice($id, $data_invoice);
+        $invoice = $this->invoiceService->updateInvoice($id, $data_invoice);
+
+        return response()->json([
+            'message' => 'Інвойс успішно оновлено.',
+            'data' => $invoice,
+        ]);
     }
 }
