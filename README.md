@@ -141,7 +141,7 @@ frontend/app/
 1. Клонувати репозиторій і зайти в папку:
 
    ```bash
-   git clone <repo-url> invoice-management
+   git clone https://github.com/Sppo/invoice-management-test.git invoice-management
    cd invoice-management
    ```
 
