@@ -144,10 +144,18 @@ frontend/app/
 2. Підняти контейнери (бек, фронт, базу):
 
    ```bash
-   docker compose up -d --build
-   ```
+  git clone https://github.com/Sppo/invoice-management-test.git invoice-management
+   cd invoice-management
 
-   Перший білд тягне base images і ставить залежності — займе кілька хвилин.
+   cp backend/.env.example backend/.env
+
+   docker compose build
+   docker compose run --rm backend composer install
+   docker compose run --rm backend php artisan key:generate
+
+   docker compose up -d
+   docker compose exec backend php artisan migrate
+   ```
 
 3. Виконати міграції бази:
 
