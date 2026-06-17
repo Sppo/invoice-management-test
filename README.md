@@ -144,17 +144,24 @@ frontend/app/
 2. Підняти контейнери (бек, фронт, базу):
 
    ```bash
-  git clone https://github.com/Sppo/invoice-management-test.git invoice-management
-   cd invoice-management
-
    cp backend/.env.example backend/.env
 
    docker compose build
    docker compose run --rm backend composer install
-   docker compose run --rm backend php artisan key:generate
-
    docker compose up -d
-   docker compose exec backend php artisan migrate
+
+   docker compose exec backend php artisan key:generate
+   ```
+
+   У `backend/.env` має бути PostgreSQL-конфіг для Docker:
+
+   ```env
+   DB_CONNECTION=pgsql
+   DB_HOST=db
+   DB_PORT=5432
+   DB_DATABASE=invoices_db
+   DB_USERNAME=invoices_user
+   DB_PASSWORD=invoices_password
    ```
 
 3. Виконати міграції бази:
