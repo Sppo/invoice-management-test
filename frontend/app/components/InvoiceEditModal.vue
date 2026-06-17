@@ -9,59 +9,38 @@
       <div class="grid grid-cols-3 gap-3">
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700">Без ПДВ</label>
-          <Field
-            name="net_amount"
-            type="number"
-            step="0.01"
-            class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-          />
+          <Field name="net_amount" type="number" step="0.01"
+            class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" />
           <ErrorMessage name="net_amount" class="mt-1 block text-xs text-rose-600" />
         </div>
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700">ПДВ</label>
-          <Field
-            name="vat_amount"
-            type="number"
-            step="0.01"
-            class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-          />
+          <Field name="vat_amount" type="number" step="0.01"
+            class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" />
           <ErrorMessage name="vat_amount" class="mt-1 block text-xs text-rose-600" />
         </div>
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700">Разом</label>
-          <input
-            :value="grossAmount.toFixed(2)"
-            type="text"
-            readonly
-            class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700"
-          />
+          <input :value="grossAmount.toFixed(2)" type="text" readonly
+            class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700" />
         </div>
       </div>
 
       <div>
         <label class="mb-1 block text-sm font-medium text-gray-700">Дата оплати</label>
-        <Field
-          name="due_date"
-          type="date"
-          :min="invoice.issue_date.slice(0, 10)"
-          class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-        />
+        <Field name="due_date" type="date" :min="invoice.issue_date.slice(0, 10)"
+          class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" />
         <ErrorMessage name="due_date" class="mt-1 block text-xs text-rose-600" />
       </div>
 
       <div class="flex justify-end gap-2 border-t pt-4">
-        <button
-          type="button"
+        <button type="button"
           class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          @click="onModalToggle(false)"
-        >
+          @click="onModalToggle(false)">
           Скасувати
         </button>
-        <button
-          type="submit"
-          :disabled="isSubmitting || !meta.valid"
-          class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-300"
-        >
+        <button type="submit" :disabled="isSubmitting || !meta.valid"
+          class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-300">
           {{ isSubmitting ? 'Збереження...' : 'Зберегти' }}
         </button>
       </div>
@@ -123,6 +102,15 @@ watch(
   },
 );
 
+watch(
+  function () { return props.modelValue; },
+  function (open) {
+    if (open) {
+      resetForm({ values: buildInitialValues(props.invoice) });
+    }
+  },
+);
+
 function calculateGrossAmount() {
   const net = Number(values.net_amount) || 0;
   const vat = Number(values.vat_amount) || 0;
@@ -150,6 +138,5 @@ const onSubmit = handleSubmit(async function (formValues) {
 
 function onModalToggle(open: boolean) {
   emit('update:modelValue', open);
-  if (!open) resetForm({ values: buildInitialValues(props.invoice) });
 }
 </script>
